@@ -1,1 +1,1 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/_TWsjXZB)
+Description: Repository for a comprehensive web commerce application consisting of multiple services including app service, API service, authentication server, and frontend user service. Allows admins to manage items, provides APIs for interaction, handles user authentication, and offers a user-friendly interface for shopping.
