@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><base href="http://localhost:8000/administrator/">
+  <title>Vezba 1</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div class="row">
+  <nav class="navbar navbar-expand-sm bg-light navbar-light">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Dashboard</a>
+        </li>
+       <li class="nav-item">
+          <a class="nav-link active" href="kolekcija.html">Ponuda</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="narudzbine.html">Narudzbine</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="kategorije.html">Kategorije</a>
+        </li>  
+        <li class="nav-item">
+          <a class="nav-link" href="materijali.html">Sastojci</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+</div>
+<main class="container">
+  <h1>Kolekcija</h1>
+  <div class="table">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Naziv</th>
+          <th>Model</th>
+          <th>Cena</th>
+          <th>Akcija</th>
+          <th>Obrisi</th>
+        </tr>
+      </thead>
+      <tbody id="spisak">
+      </tbody>
+    </table>
+    <div class="center-button">
+      <a href="novi-model.html" class="btn btn-primary" style="background-color: #595252;">Novi model</a>
+    </div>
+  </div>
+</main>
+
+<script>
+  const cookies = document.cookie.split('=');
+  const token = cookies[cookies.length - 1];
+  window.addEventListener("load", function(){
+  fetch('http://localhost:9000/kolekcija', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+      })
+  .then(response => response.json()).then(data => {
+    console.log(data);
+  for (let i = 0; i < data.length; i++) {
+
+      let tr = document.createElement("tr");
+      console.log("ID:", data[i].id);
+      tr.dataset.id = data[i].id;
+
+
+      let tdNaziv = document.createElement("td");
+      tdNaziv.innerHTML = data[i].naziv;
+      tr.appendChild(tdNaziv);
+
+
+      let tdOpis = document.createElement("td");
+      tdOpis.innerHTML = data[i].opis;
+      tr.appendChild(tdOpis);
+
+
+      let tdKolicina = document.createElement("td");
+      tdKolicina.innerHTML = data[i].cena;
+      tr.appendChild(tdKolicina);
+
+
+      let tdButton = document.createElement("td");
+
+
+      let changePriceButton = document.createElement("button");
+      changePriceButton.textContent = "Promena cene";
+      changePriceButton.className = "btn btn-primary"
+      changePriceButton.style.backgroundColor = "#595252";
+
+
+      changePriceButton.addEventListener("click", function () {
+        var c = prompt("Unesi novu cenu:");
+
+        var id = this.parentNode.parentNode.dataset.id;
+
+          fetch(`http://localhost:9000/kolekcija/promeni-cenu/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json','Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ cena: c })
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log(data);
+              tdKolicina.innerHTML = data.cena;
+            })
+            .catch(err => {
+              alert("Desila se greska");
+              console.log(err);
+            });
+      });
+      tdButton.appendChild(changePriceButton);
+      let space = document.createTextNode("\u00A0");
+      tdButton.appendChild(space);
+
+
+      let editLink = document.createElement("a");
+      editLink.href = "#";
+      editLink.textContent = "Izmeni";
+      editLink.className = "btn btn-primary";
+      editLink.style.backgroundColor = "#595252";
+
+      editLink.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        id = this.parentNode.parentNode.dataset.id;
+
+        let newNaziv = prompt("Unesi novi naziv:");
+        let newOpis = prompt("Unesi novi opis:");
+
+        if (newNaziv !== null && newOpis !== null) {
+            fetch(`http://localhost:9000/kolekcija/izmeni/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    naziv: newNaziv,
+                    opis: newOpis
+                })
+            })
+              .then(response => response.json())
+              .then(data => {
+                  console.log(data);
+                  tdNaziv.innerHTML = data.naziv;
+                  tdOpis.innerHTML = data.opis;
+              })
+              .catch(err => {
+                  alert("Desila se greska");
+                  console.log(err);
+              });
+        }
+    });
+      tdButton.appendChild(editLink);
+
+
+      tr.appendChild(tdKolicina);
+      tr.appendChild(tdButton);
+
+      let tdObrisi = document.createElement("td");
+        let btnObrisi = document.createElement("button");
+        btnObrisi.innerHTML = "X";
+        btnObrisi.className = "btn btn-danger";
+        btnObrisi.style.backgroundColor = "#FF0000";
+        btnObrisi.style.border = "none";
+        btnObrisi.style.padding = "5px 10px";
+        btnObrisi.addEventListener("click", function () {
+            if (confirm("Potvrdi brisanje")) {
+                var id = this.parentNode.parentNode.dataset.id;
+                fetch(`http://localhost:9000/kolekcija/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                  }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        window.location.href = "/kolekcija.html";
+                    })
+                    .catch(err => console.log(err));
+            } else {
+                return;
+            }
+        });
+        tdObrisi.appendChild(btnObrisi);
+        tr.appendChild(tdObrisi);
+
+      document.getElementById("spisak").appendChild(tr);
+      
+    }
+})
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});
+</script>
+</body>
+</html>
